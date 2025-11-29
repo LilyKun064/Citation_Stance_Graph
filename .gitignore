@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.pyc
+
+# Virtual environment
+.venv/
+
+# User environment variables
+.env
+
+# Data files (users regenerate them)
+data/raw/openalex/
+data/raw/scite/
+data/interim/
+data/processed/citation_edges_raw.csv
+data/processed/citation_edges_collection.csv
+data/processed/papers.csv
+data/processed/papers_with_scite.csv
+data/processed/scite_tallies.csv
+data/processed/edge_roles_llm.csv
+data/processed/citation_graph_openalex_with_scite.graphml
+data/processed/citation_graph_edge_roles.html
+
+# Jupyter backup
+.ipynb_checkpoints/
