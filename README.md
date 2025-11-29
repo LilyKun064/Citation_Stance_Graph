@@ -125,7 +125,7 @@ data/raw/zotero/YourCollection.json
 
 Run:
 ```bash
-python scripts/run_from_zotero_json.py
+python scripts/run_from_zotero_json.py Your_Collection_Name
 ```
 
 Produces:
@@ -137,7 +137,7 @@ data/interim/doi_list.txt
 
 ## **Step 2 — Fetch OpenAlex metadata for each DOI**
 ```bash
-python scripts/fetch_openalex_for_dois.py
+python scripts/fetch_openalex_for_dois.py Your_Collection_Name
 ```
 
 Produces:
@@ -157,7 +157,7 @@ Each file includes:
 
 ## **Step 3 — Build citation tables**
 ```bash
-python scripts/build_openalex_citation_graph.py
+python scripts/build_openalex_citation_graph.py Your_Collection_Name
 ```
 
 Produces:
@@ -170,7 +170,7 @@ data/processed/citation_edges_raw.csv
 
 ## **Step 4 — Keep only citations within your collection**
 ```bash
-python scripts/filter_collection_edges.py
+python scripts/filter_collection_edges.py Your_Collection_Name
 ```
 
 Produces:
@@ -182,7 +182,7 @@ data/processed/citation_edges_collection.csv
 
 ## **Step 5 — Fetch scite global tallies (no API key required)**
 ```bash
-python scripts/fetch_scite_tallies.py
+python scripts/fetch_scite_tallies.py Your_Collection_Name
 ```
 
 Produces:
@@ -194,7 +194,7 @@ data/raw/scite/tallies.json
 
 ## **Step 6 — Convert tallies to CSV**
 ```bash
-python scripts/parse_scite_tallies.py
+python scripts/parse_scite_tallies.py Your_Collection_Name
 ```
 
 Produces:
@@ -206,7 +206,7 @@ data/processed/scite_tallies.csv
 
 ## **Step 7 — Merge tallies into paper metadata**
 ```bash
-python scripts/merge_scite_into_papers.py
+python scripts/merge_scite_into_papers.py Your_Collection_Name
 ```
 
 Produces:
@@ -218,7 +218,7 @@ data/processed/papers_with_scite.csv
 
 ## **Step 8 — Build final citation graph**
 ```bash
-python scripts/build_networkx_graph.py
+python scripts/build_networkx_graph.py Your_Collection_Name
 ```
 
 Produces:
@@ -230,7 +230,7 @@ citation_graph_openalex_with_scite.graphml
 
 ## **Step 9 — LLM rhetorical-role classification (title + abstract)**
 ```bash
-python scripts/classify_collection_edges_llm.py
+python scripts/classify_collection_edges_llm.py Your_Collection_Name
 ```
 
 Produces:
@@ -242,7 +242,7 @@ edge_roles_llm.csv
 
 ## **Step 10 — Generate interactive visualization**
 ```bash
-python scripts/plot_graph_interactive_edge_roles.py
+python scripts/plot_graph_interactive_edge_roles.py Your_Collection_Name
 ```
 
 Produces:
