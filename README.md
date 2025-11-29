@@ -59,49 +59,40 @@ The pipeline processes your Zotero library through these stages:
 # 📁 Directory Structure (Clean & Final)
 
 ```
-data/
-  raw/
-    zotero/                     # Zotero JSON export
-    openalex/                   # Raw OpenAlex responses (one per DOI)
-    scite/
-      tallies.json              # Global scite tallies (no API key required)
-  interim/
-    doi_list.txt                # Cleaned DOI list
-  processed/
-    papers.csv
-    citation_edges_raw.csv
-    citation_edges_collection.csv
-    scite_tallies.csv
-    papers_with_scite.csv
-    citation_graph_openalex_with_scite.graphml
-    edge_roles_llm.csv
-    citation_graph_edge_roles.html
+citation_stance_graph/
+  data/
+    MyCollection/
+      raw/
+        zotero/
+        openalex/
+        scite/
+      interim/
+      processed/
+  scripts/
+    extract_dois.py
+    fetch_openalex.py
+    build_nodes_and_edges.py
+    filter_collection_edges.py
+    fetch_scite_tallies.py
+    scite_tallies_to_csv.py
+    merge_scite_into_papers.py
+    build_graph_openalex_with_scite.py
+    classify_edge_roles_llm.py
+    plot_graph_interactive_edge_roles.py
 
-scripts/
-  run_from_zotero_json.py
-  fetch_openalex_for_dois.py
-  build_openalex_citation_graph.py
-  filter_collection_edges.py
-  fetch_scite_tallies.py
-  parse_scite_tallies.py
-  merge_scite_into_papers.py
-  build_networkx_graph.py
-  classify_collection_edges_llm.py
-  plot_graph_interactive_edge_roles.py
+  src/csg/
+    io/
+      zotero_json.py
+      openalex_api.py
+      openalex_parse.py
+    llm/
+      classify_edge_role.py
+    models/
+      data_structure.py
 
-src/csg/
-  io/
-    zotero_json.py
-    openalex_api.py
-    openalex_parse.py
-  llm/
-    classify_edge_role.py
-  models/
-    data_structure.py
-
-README.md
-requirements.txt
-.env
+  README.md
+  requirements.txt
+  .env
 ```
 
 ---

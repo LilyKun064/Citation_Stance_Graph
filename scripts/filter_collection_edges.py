@@ -2,38 +2,49 @@
 """
 Step 4: Filter edges to only those originating from your collection.
 
-Inputs:
-    data/processed/papers.csv
-    data/processed/citation_edges_raw.csv
+Usage:
+    python filter_collection_edges.py <collection_name>
+
+Inputs (for that collection):
+    data/<collection_name>/processed/papers.csv
+    data/<collection_name>/processed/citation_edges_raw.csv
 
 Output:
-    data/processed/citation_edges_collection.csv
+    data/<collection_name>/processed/citation_edges_collection.csv
 
 Each row:
     citing_openalex_id, cited_openalex_id
 where citing_openalex_id is in the Zotero-based collection.
 """
 
+import sys
 from pathlib import Path
 import pandas as pd
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-PROCESSED_DIR = PROJECT_ROOT / "data" / "processed"
-
-PAPERS_CSV = PROCESSED_DIR / "papers.csv"
-EDGES_RAW_CSV = PROCESSED_DIR / "citation_edges_raw.csv"
-EDGES_COLL_CSV = PROCESSED_DIR / "citation_edges_collection.csv"
+DATA_DIR = PROJECT_ROOT / "data"
 
 
 def main():
-    if not PAPERS_CSV.exists():
-        raise FileNotFoundError(f"Missing papers.csv at {PAPERS_CSV}")
-    if not EDGES_RAW_CSV.exists():
-        raise FileNotFoundError(f"Missing citation_edges_raw.csv at {EDGES_RAW_CSV}")
+    if len(sys.argv) < 2:
+        print("Usage: python filter_collection_edges.py <collection_name>")
+        sys.exit(1)
 
-    papers = pd.read_csv(PAPERS_CSV)
-    edges_raw = pd.read_csv(EDGES_RAW_CSV)
+    collection = sys.argv[1]
+
+    processed_dir = DATA_DIR / collection / "processed"
+    papers_csv = processed_dir / "papers.csv"
+    edges_raw_csv = processed_dir / "citation_edges_raw.csv"
+    edges_coll_csv = processed_dir / "citation_edges_collection.csv"
+
+    if not papers_csv.exists():
+        raise FileNotFoundError(f"Missing papers.csv at {papers_csv}")
+    if not edges_raw_csv.exists():
+        raise FileNotFoundError(f"Missing citation_edges_raw.csv at {edges_raw_csv}")
+
+    papers = pd.read_csv(papers_csv)
+    edges_raw = pd.read_csv(edges_raw_csv)
 
     # All OpenAlex IDs that are in your Zotero collection
     in_coll_ids = set(papers["openalex_id"].astype(str))
@@ -44,9 +55,11 @@ def main():
 
     edges_coll = edges_raw[edges_raw["citing_openalex_id"].isin(in_coll_ids)].copy()
 
-    edges_coll.to_csv(EDGES_COLL_CSV, index=False)
-    print(f"Wrote {EDGES_COLL_CSV} with {len(edges_coll)} edges "
-          f"from {len(in_coll_ids)} collection papers.")
+    edges_coll.to_csv(edges_coll_csv, index=False)
+    print(
+        f"Wrote {edges_coll_csv} with {len(edges_coll)} edges "
+        f"from {len(in_coll_ids)} collection papers."
+    )
 
 
 if __name__ == "__main__":

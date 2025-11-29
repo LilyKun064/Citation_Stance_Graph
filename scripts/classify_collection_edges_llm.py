@@ -1,15 +1,18 @@
 #!/usr/bin/env python
 """
 Step 8 (upgraded): Run LLM role classification for each citation edge,
-using TITLE + ABSTRACT for both citing and cited papers.
+using TITLE + ABSTRACT for both citing and cited papers, for a given collection.
+
+Usage:
+    python classify_edge_roles_llm.py <collection_name>
 
 Inputs:
-    data/processed/citation_edges_collection.csv
-    data/processed/papers_with_scite.csv
-    data/raw/openalex/*.json
+    data/<collection_name>/processed/papers_with_scite.csv
+    data/<collection_name>/processed/citation_edges_collection.csv
+    data/<collection_name>/raw/openalex/*.json
 
 Output:
-    data/processed/edge_roles_llm.csv
+    data/<collection_name>/processed/edge_roles_llm.csv
 
 Each row:
     citing_id   - OpenAlex ID of the citing paper
@@ -20,6 +23,7 @@ Each row:
 """
 
 import json
+import sys
 from pathlib import Path
 
 import pandas as pd
@@ -32,12 +36,7 @@ from openai import OpenAI
 # ---------------------------------------------------------------------
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-RAW_OA_DIR = PROJECT_ROOT / "data" / "raw" / "openalex"
-PROCESSED_DIR = PROJECT_ROOT / "data" / "processed"
-
-PAPERS_CSV = PROCESSED_DIR / "papers_with_scite.csv"
-EDGES_COLL_CSV = PROCESSED_DIR / "citation_edges_collection.csv"
-OUT_CSV = PROCESSED_DIR / "edge_roles_llm.csv"
+DATA_DIR = PROJECT_ROOT / "data"
 
 load_dotenv()  # loads OPENAI_API_KEY from .env
 client = OpenAI()  # uses OPENAI_API_KEY
@@ -70,15 +69,15 @@ def reconstruct_abstract(inv) -> str:
     return " ".join(words)
 
 
-def load_openalex_abstracts() -> dict:
+def load_openalex_abstracts(raw_oa_dir: Path) -> dict:
     """
-    Scan data/raw/openalex/*.json and build:
+    Scan raw_oa_dir/*.json and build:
         openalex_id -> abstract_text
     """
     abstracts: dict[str, str] = {}
 
-    json_files = sorted(RAW_OA_DIR.glob("*.json"))
-    print(f"Loading abstracts from {len(json_files)} OpenAlex JSON files ...")
+    json_files = sorted(raw_oa_dir.glob("*.json"))
+    print(f"Loading abstracts from {len(json_files)} OpenAlex JSON files in {raw_oa_dir} ...")
 
     for path in json_files:
         try:
@@ -200,17 +199,31 @@ def classify_edge_role(
 # ---------------------------------------------------------------------
 
 def main():
-    if not PAPERS_CSV.exists():
-        raise FileNotFoundError(f"Missing {PAPERS_CSV}")
-    if not EDGES_COLL_CSV.exists():
-        raise FileNotFoundError(f"Missing {EDGES_COLL_CSV}")
-    if not RAW_OA_DIR.exists():
-        raise FileNotFoundError(f"Missing OpenAlex dir {RAW_OA_DIR}")
+    if len(sys.argv) < 2:
+        print("Usage: python classify_edge_roles_llm.py <collection_name>")
+        sys.exit(1)
 
-    print(f"Loading papers from {PAPERS_CSV} ...")
-    papers = pd.read_csv(PAPERS_CSV)
-    print(f"Loading edges from {EDGES_COLL_CSV} ...")
-    edges = pd.read_csv(EDGES_COLL_CSV)
+    collection = sys.argv[1]
+
+    collection_dir = DATA_DIR / collection
+    processed_dir = collection_dir / "processed"
+    raw_oa_dir = collection_dir / "raw" / "openalex"
+
+    papers_csv = processed_dir / "papers_with_scite.csv"
+    edges_coll_csv = processed_dir / "citation_edges_collection.csv"
+    out_csv = processed_dir / "edge_roles_llm.csv"
+
+    if not papers_csv.exists():
+        raise FileNotFoundError(f"Missing {papers_csv}")
+    if not edges_coll_csv.exists():
+        raise FileNotFoundError(f"Missing {edges_coll_csv}")
+    if not raw_oa_dir.exists():
+        raise FileNotFoundError(f"Missing OpenAlex dir {raw_oa_dir}")
+
+    print(f"Loading papers from {papers_csv} ...")
+    papers = pd.read_csv(papers_csv)
+    print(f"Loading edges from {edges_coll_csv} ...")
+    edges = pd.read_csv(edges_coll_csv)
 
     # Lookup: OpenAlex ID -> title
     title_lookup = dict(
@@ -221,7 +234,7 @@ def main():
     )
 
     # Lookup: OpenAlex ID -> abstract
-    abstract_lookup = load_openalex_abstracts()
+    abstract_lookup = load_openalex_abstracts(raw_oa_dir)
 
     records = []
 
@@ -259,8 +272,8 @@ def main():
         })
 
     out_df = pd.DataFrame(records)
-    out_df.to_csv(OUT_CSV, index=False)
-    print(f"\nWrote {OUT_CSV} with {len(out_df)} classified edges.")
+    out_df.to_csv(out_csv, index=False)
+    print(f"\nWrote {out_csv} with {len(out_df)} classified edges for collection '{collection}'.")
 
 
 if __name__ == "__main__":

@@ -1,96 +1,72 @@
 #!/usr/bin/env python
 """
-Step 2: Fetch OpenAlex metadata for each DOI.
+Step 2: Fetch OpenAlex metadata for a collection.
 
-Input:
-    data/interim/doi_list.txt
-
-Output:
-    data/raw/openalex/{safe_doi}.json
+Usage:
+    python fetch_openalex.py <collection_name>
 """
 
 import os
+import sys
 import time
 import json
 from pathlib import Path
-
 import requests
 
-
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-INTERIM_DIR = PROJECT_ROOT / "data" / "interim"
-RAW_OA_DIR = PROJECT_ROOT / "data" / "raw" / "openalex"
-RAW_OA_DIR.mkdir(parents=True, exist_ok=True)
+DATA_DIR = PROJECT_ROOT / "data"
 
-DOI_LIST_PATH = INTERIM_DIR / "doi_list.txt"
-
-# Optional: use OPENALEX_MAILTO from environment / .env
 MAILTO = os.environ.get("OPENALEX_MAILTO", "you@example.com")
 
 
 def doi_to_filename(doi: str) -> str:
-    """
-    Convert DOI to a filesystem-safe filename.
-    """
-    return (
-        doi.replace("https://doi.org/", "")
-           .replace("http://doi.org/", "")
-           .replace("/", "_")
-           .replace(":", "_")
-           .strip()
-    )
+    return doi.replace("/", "_").replace(":", "_")
 
 
-def fetch_openalex_for_doi(doi: str) -> dict | None:
-    """
-    Fetch OpenAlex JSON for a single DOI.
-    Returns the JSON dict on success, or None on failure.
-    """
-    # OpenAlex lets you query works via the DOI URL
+def fetch_openalex(doi: str):
     url = f"https://api.openalex.org/works/https://doi.org/{doi}"
-    params = {"mailto": MAILTO}
-
-    print(f"[GET] {doi} -> {url}")
     try:
-        resp = requests.get(url, params=params, timeout=20)
-        if resp.status_code == 404:
-            print(f"  -> 404 Not Found for DOI {doi}, skipping.")
+        r = requests.get(url, params={"mailto": MAILTO}, timeout=20)
+        if r.status_code == 404:
+            print(f"404 for {doi}, skipping")
             return None
-        resp.raise_for_status()
-        return resp.json()
-    except requests.RequestException as e:
-        print(f"  !! Error fetching {doi}: {e}")
+        r.raise_for_status()
+        return r.json()
+    except Exception as e:
+        print(f"ERROR fetching {doi}: {e}")
         return None
 
 
 def main():
-    if not DOI_LIST_PATH.exists():
-        raise FileNotFoundError(f"DOI list not found at {DOI_LIST_PATH}")
+    if len(sys.argv) < 2:
+        print("Usage: python fetch_openalex.py <collection_name>")
+        sys.exit(1)
 
-    dois = [
-        line.strip()
-        for line in DOI_LIST_PATH.read_text(encoding="utf-8").splitlines()
-        if line.strip()
-    ]
-    print(f"Found {len(dois)} DOIs in {DOI_LIST_PATH}")
+    collection = sys.argv[1]
+
+    root = DATA_DIR / collection
+    interim_dir = root / "interim"
+    oa_dir = root / "raw" / "openalex"
+    oa_dir.mkdir(parents=True, exist_ok=True)
+
+    doi_list = interim_dir / "doi_list.txt"
+    if not doi_list.exists():
+        raise FileNotFoundError(f"DOI list not found: {doi_list}")
+
+    dois = [x.strip() for x in doi_list.read_text().splitlines() if x.strip()]
 
     for doi in dois:
-        fname = RAW_OA_DIR / f"{doi_to_filename(doi)}.json"
-        if fname.exists():
-            print(f"[skip] {doi} (already have {fname.name})")
+        out = oa_dir / f"{doi_to_filename(doi)}.json"
+        if out.exists():
+            print(f"[skip] {doi}")
             continue
 
-        data = fetch_openalex_for_doi(doi)
-        if data is None:
-            continue
+        data = fetch_openalex(doi)
+        if data:
+            out.write_text(json.dumps(data, indent=2), encoding="utf-8")
+            print(f"Saved {out}")
 
-        fname.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
-        print(f"  -> Saved to {fname}")
-
-        # be polite to the API
         time.sleep(0.5)
-
-    print("Done fetching OpenAlex metadata.")
 
 
 if __name__ == "__main__":

@@ -1,13 +1,16 @@
 #!/usr/bin/env python
 """
-Step 6: Merge scite tallies into your papers table.
+Step 6: Merge scite tallies into your papers table for a given collection.
+
+Usage:
+    python merge_scite_into_papers.py <collection_name>
 
 Inputs:
-    data/processed/papers.csv
-    data/processed/scite_tallies.csv
+    data/<collection_name>/processed/papers.csv
+    data/<collection_name>/processed/scite_tallies.csv
 
 Output:
-    data/processed/papers_with_scite.csv
+    data/<collection_name>/processed/papers_with_scite.csv
 
 Result:
     Same rows as papers.csv, but with extra columns:
@@ -19,16 +22,12 @@ Result:
         - scite_citingPublications
 """
 
+import sys
 from pathlib import Path
 import pandas as pd
 
-
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-PROCESSED_DIR = PROJECT_ROOT / "data" / "processed"
-
-PAPERS_CSV = PROCESSED_DIR / "papers.csv"
-SCITE_CSV = PROCESSED_DIR / "scite_tallies.csv"
-OUT_CSV = PROCESSED_DIR / "papers_with_scite.csv"
+DATA_DIR = PROJECT_ROOT / "data"
 
 
 def clean_doi(doi: str | None) -> str:
@@ -43,13 +42,24 @@ def clean_doi(doi: str | None) -> str:
 
 
 def main():
-    if not PAPERS_CSV.exists():
-        raise FileNotFoundError(f"Missing {PAPERS_CSV}")
-    if not SCITE_CSV.exists():
-        raise FileNotFoundError(f"Missing {SCITE_CSV}")
+    if len(sys.argv) < 2:
+        print("Usage: python merge_scite_into_papers.py <collection_name>")
+        sys.exit(1)
 
-    papers = pd.read_csv(PAPERS_CSV)
-    scite = pd.read_csv(SCITE_CSV)
+    collection = sys.argv[1]
+
+    processed_dir = DATA_DIR / collection / "processed"
+    papers_csv = processed_dir / "papers.csv"
+    scite_csv = processed_dir / "scite_tallies.csv"
+    out_csv = processed_dir / "papers_with_scite.csv"
+
+    if not papers_csv.exists():
+        raise FileNotFoundError(f"Missing {papers_csv}")
+    if not scite_csv.exists():
+        raise FileNotFoundError(f"Missing {scite_csv}")
+
+    papers = pd.read_csv(papers_csv)
+    scite = pd.read_csv(scite_csv)
 
     # Normalize DOIs on both sides
     papers["doi_norm"] = papers["doi"].apply(clean_doi)
@@ -91,12 +101,12 @@ def main():
         if col in merged.columns:
             merged[col] = merged[col].fillna(0).astype(int)
 
-    # Drop helper doi_norm if you don't want it
+    # Drop helper column
     merged.drop(columns=["doi_norm"], inplace=True)
 
-    merged.to_csv(OUT_CSV, index=False)
+    merged.to_csv(out_csv, index=False)
 
-    print(f"Wrote {OUT_CSV} with {len(merged)} papers.")
+    print(f"Wrote {out_csv} with {len(merged)} papers.")
     print("Columns now include scite_* tallies.")
 
 
