@@ -120,7 +120,7 @@ No scite API key is needed for global tallies.
 ## **Step 1 — Extract DOIs from Zotero JSON**
 Place your Zotero export here:
 ```
-data/raw/zotero/YourCollection.json
+data/Your_Collection_Name/raw/zotero/YourCollection.json
 ```
 
 Run:
