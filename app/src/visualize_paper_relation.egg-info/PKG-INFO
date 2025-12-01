@@ -1,0 +1,28 @@
+Metadata-Version: 2.4
+Name: visualize-paper-relation
+Version: 0.1.0
+Summary: A tool to visualize citation relationships using Zotero JSON exports
+Author: CJ
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+Requires-Dist: pandas
+Requires-Dist: networkx
+Requires-Dist: pyvis
+Requires-Dist: tqdm
+Requires-Dist: requests
+
+# Visualize Paper Relation
+
+This tool converts a Zotero JSON export into a visual citation graph.
+
+## Quick Start
+
+1. Install:
+
+   pip install .
+
+2. Run:
+
+   vpr --zotero-json MyCollection.json --out-dir results
+
+Outputs are saved in the specified folder.
