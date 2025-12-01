@@ -19,7 +19,7 @@ From the repo root:
 
 ```
 python -m venv .venv
-.\.venv\Scriptsctivate
+.\.venv\Scripts\activate
 
 cd app
 pip install -r requirements.txt
