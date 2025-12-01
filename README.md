@@ -38,6 +38,32 @@ please feel free to open issues, start discussions, or submit pull requests.
 I’m very open to collaborations and suggestions from anyone who finds this idea useful or exciting.
 Let’s build this together. 💛
 
+## Update: One-Step Handling
+
+Run the full citation-stance pipeline for a Zotero collection from **any directory**. The pipeline no longer requires your Zotero export file to be placed inside the project structure.
+
+### Usage (from repo root, inside venv):
+
+    python scripts/run_full_pipeline_from_zotero.py <collection_slug> <zotero_json_path>
+
+- `<collection_slug>` is something like: `LLM_Gender_Bias`
+- `<zotero_json_path>` can be **ANY** `.json` file path (Downloads, Desktop, Zotero temp folder, etc.)
+
+### How it works internally
+
+- The script accepts your JSON from anywhere on your machine.
+- It automatically copies it (if needed) into:
+
+      data/<collection_slug>/raw/zotero/<collection_slug>.json
+
+- If the file is already in this location, the script detects it and skips the copy.
+- Then it runs all pipeline steps sequentially, ending with:
+
+      data/<collection_slug>/processed/citation_graph_edge_roles.html
+
+This update makes Zotero integration fully seamless and zero-maintenance.
+
+
 ---
 
 ## 🚀 Pipeline Overview
