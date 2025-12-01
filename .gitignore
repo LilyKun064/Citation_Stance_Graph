@@ -13,3 +13,7 @@ data/**
 
 # Jupyter backup
 .ipynb_checkpoints/
+
+# Local outputs from the app
+app_output/
+output_app_run/

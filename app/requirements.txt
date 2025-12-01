@@ -1,0 +1,24 @@
+# Core
+pandas>=2.0
+numpy>=1.23
+requests>=2.31
+tqdm>=4.66
+python-dotenv>=1.0
+
+# Graph + Visualization
+networkx>=3.2
+pyvis>=0.3.2
+
+# App Interface (user uploads JSON, sees visualization)
+streamlit>=1.39
+streamlit-option-menu>=0.3.6
+
+# LLM Support (for role classification later)
+openai>=1.14  # new unified OpenAI client, supports GPT-4o, GPT-4.1
+
+# JSON handling & validation (optional but recommended)
+orjson>=3.9
+pydantic>=2.5
+
+# Misc helpers
+beautifulsoup4>=4.12

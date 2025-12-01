@@ -1,0 +1,2 @@
+[console_scripts]
+vpr = visualize_paper_relation.cli:main
