@@ -13,7 +13,13 @@ Built originally as a minimal research tool — now evolving into a community-re
 
 A one-step, user-friendly interface to run the entire pipeline **without touching the file structure or scripts**.
 
-## How to run the app
+## Easy run of the app: 
+
+Just go to https://citationstancegraph.streamlit.app/
+
+Put in your API key, upload your .json. Then you have everything! 
+
+## How to run the app with download
 
 From the repo root:
 
